@@ -1,0 +1,1044 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Electricity | Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        :root {
+            --green: #168451;
+            --green-dark: #105b3b;
+            --green-light: #e9f8ee;
+            --text: #193b2b;
+            --muted: #708176;
+            --border: #e5eee7;
+            --white: #ffffff;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            background:
+                radial-gradient(circle at 0% 0%, #d9f8e3 0, transparent 28%),
+                linear-gradient(135deg, #f5fbf6, #eef3ff);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        a { color: inherit; }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+            padding: 16px 5%;
+            background: rgba(255,255,255,.92);
+            border-bottom: 1px solid #e6eee8;
+            backdrop-filter: blur(14px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--green);
+            font-weight: 800;
+            font-size: 19px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            display: grid;
+            place-items: center;
+            width: 39px;
+            height: 39px;
+            border-radius: 13px;
+            background: var(--green-light);
+            font-size: 21px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            padding: 10px 13px;
+            border-radius: 10px;
+            color: #53675a;
+            font-size: 13px;
+            font-weight: 700;
+            transition: .2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: var(--green-light);
+            color: var(--green);
+        }
+
+        .container {
+            width: min(1160px, 92%);
+            margin: auto;
+            padding: 30px 0;
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            padding: clamp(25px, 5vw, 45px);
+            margin-bottom: 25px;
+            border-radius: 27px;
+            color: white;
+            background: linear-gradient(120deg, #105d3c, #168451 65%, #39ad70);
+            box-shadow: 0 18px 45px #176b4525;
+        }
+
+        .hero::after {
+            content: "⚡";
+            position: absolute;
+            right: 5%;
+            top: -25px;
+            font-size: clamp(100px, 17vw, 190px);
+            opacity: .10;
+            transform: rotate(12deg);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 8px 12px;
+            margin-bottom: 13px;
+            border: 1px solid #ffffff35;
+            border-radius: 30px;
+            background: #ffffff14;
+            color: #e0ffea;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .5px;
+        }
+
+        .hero h1 {
+            margin: 0 0 13px;
+            font-size: clamp(29px, 4.5vw, 43px);
+            letter-spacing: -1px;
+            line-height: 1.15;
+        }
+
+        .hero p {
+            max-width: 640px;
+            margin: 0;
+            color: #e0f4e7;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .hero-link {
+            position: relative;
+            z-index: 1;
+            flex-shrink: 0;
+            padding: 13px 17px;
+            background: white;
+            color: var(--green-dark);
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 13px;
+            box-shadow: 0 7px 20px #063e2420;
+        }
+
+        .section-heading {
+            margin: 30px 0 15px;
+        }
+
+        .section-heading h2 {
+            margin: 0 0 7px;
+            font-size: 22px;
+            color: var(--text);
+        }
+
+        .section-heading p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .quick-card {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 19px;
+            background: white;
+            border: 1px solid #e7f0e9;
+            border-radius: 18px;
+            text-decoration: none;
+            box-shadow: 0 7px 22px #193e2a08;
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .quick-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px #193e2a12;
+        }
+
+        .quick-icon {
+            display: grid;
+            place-items: center;
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+            border-radius: 15px;
+            background: var(--green-light);
+            font-size: 23px;
+        }
+
+        .quick-card strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .quick-card span {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .card {
+            padding: clamp(19px, 3vw, 29px);
+            margin-bottom: 23px;
+            background: rgba(255,255,255,.96);
+            border: 1px solid #e6eee8;
+            border-radius: 21px;
+            box-shadow: 0 9px 28px #193e2a09;
+            scroll-margin-top: 100px;
+        }
+
+        .card-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 13px;
+            margin-bottom: 9px;
+        }
+
+        .heading-icon {
+            display: grid;
+            place-items: center;
+            width: 43px;
+            height: 43px;
+            flex-shrink: 0;
+            border-radius: 13px;
+            background: var(--green-light);
+            font-size: 22px;
+        }
+
+        h2 {
+            color: var(--text);
+            margin: 2px 0 6px;
+            font-size: 21px;
+        }
+
+        .description {
+            color: var(--muted);
+            line-height: 1.75;
+            font-size: 14px;
+        }
+
+        .card > .description {
+            margin-top: 7px;
+            margin-bottom: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 19px;
+            margin-top: 23px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #344f3e;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        input {
+            width: 100%;
+            min-width: 0;
+            padding: 13px 14px;
+            border: 1px solid #dce7de;
+            border-radius: 11px;
+            background: #fbfdfb;
+            color: var(--text);
+            font: inherit;
+            font-size: 14px;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #58b880;
+            box-shadow: 0 0 0 4px #16845115;
+            background: white;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-top: 21px;
+            padding: 14px 18px;
+            border: none;
+            border-radius: 11px;
+            background: linear-gradient(120deg, #168451, #219b5f);
+            color: white;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px #16845125;
+        }
+
+        .demo-button {
+            background: linear-gradient(120deg, #355fc2, #527ce0);
+        }
+
+        .demo-button:hover {
+            box-shadow: 0 8px 18px #355fc225;
+        }
+
+        .result {
+            padding: 22px;
+            margin-top: 22px;
+            border: 1px solid #c9ead4;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f3fff6, #e7f8ed);
+            overflow-wrap: anywhere;
+            line-height: 1.8;
+        }
+
+        .result h3 {
+            margin: 0 0 13px;
+            color: #176b45;
+            font-size: 18px;
+        }
+
+        .result p { margin: 9px 0; }
+
+        .metric {
+            display: inline-block;
+            color: #147a49;
+            font-size: clamp(25px, 4vw, 32px);
+            font-weight: 800;
+        }
+
+        .metric-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #5c7665;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+        }
+
+        .prediction-value {
+            display: inline-block;
+            padding: 13px 17px;
+            margin: 5px 0 12px;
+            border-radius: 13px;
+            background: white;
+            border: 1px solid #d6eddd;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 8px 0;
+        }
+
+        .result-meta span {
+            padding: 7px 11px;
+            border-radius: 30px;
+            background: #ffffffd9;
+            color: #286744;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .error {
+            background: #fff3f1;
+            border-color: #f1c7c2;
+            color: #922e26;
+        }
+
+        .error strong { color: #922e26; }
+
+        .recommendation-card {
+            margin-top: 16px;
+            padding: 21px;
+            border: 1px solid #e0eee4;
+            border-left: 5px solid var(--green);
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f5fff7, #e5f7eb);
+            line-height: 1.8;
+            overflow-wrap: anywhere;
+        }
+
+        .recommendation-card h3 {
+            margin: 0 0 9px;
+            color: #176b45;
+            font-size: 17px;
+        }
+
+        .recommendation-card p {
+            margin: 0;
+            color: #405b4a;
+            font-size: 14px;
+        }
+
+        .low-card {
+            background: linear-gradient(135deg, #f0fff4, #ddf8e6);
+            border-left-color: #22a05a;
+        }
+
+        .medium-card {
+            background: linear-gradient(135deg, #fffbee, #fff1ca);
+            border-left-color: #e7a51a;
+        }
+
+        .high-card {
+            background: linear-gradient(135deg, #fff5f0, #ffe1d6);
+            border-left-color: #e15b3d;
+        }
+
+        .night-card {
+            background: linear-gradient(135deg, #f4f3ff, #e4e8ff);
+            border-left-color: #5966cf;
+        }
+
+        .night-card h3 { color: #414ba9; }
+
+        .tracker-result {
+            margin-top: 22px;
+            padding: 22px;
+            border-radius: 15px;
+            background: #f3f9ff;
+            border: 1px solid #d9e8fb;
+            overflow-wrap: anywhere;
+            line-height: 1.8;
+        }
+
+        .tracker-result h3 {
+            margin-top: 0;
+            color: #2858a5;
+        }
+
+        .tracker-result p { margin: 8px 0; }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 17px;
+            border: 1px solid #e8eee9;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 570px;
+        }
+
+        th, td {
+            padding: 14px 13px;
+            border-bottom: 1px solid #edf1ee;
+            text-align: left;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        th {
+            color: #286744;
+            background: #eff9f2;
+            font-weight: 800;
+        }
+
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: #f8fcf9; }
+
+        .tag {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 30px;
+            background: #e5f5e9;
+            color: #176b45;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .empty-state {
+            padding: 25px 18px;
+            margin-top: 18px;
+            border: 1px dashed #d5e5d9;
+            border-radius: 14px;
+            background: #f9fcfa;
+            color: var(--muted);
+            text-align: center;
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        .empty-state strong {
+            display: block;
+            color: #3d634a;
+            margin-bottom: 5px;
+        }
+
+        .chart-wrap {
+            position: relative;
+            width: 100%;
+            height: 340px;
+            margin-top: 24px;
+        }
+
+        .footnote {
+            margin-top: 14px;
+            color: #829087;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .footer {
+            padding: 23px 10px;
+            color: #718076;
+            font-size: 12px;
+            line-height: 1.8;
+            text-align: center;
+        }
+
+        .footer a {
+            color: var(--green);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        @media (max-width: 760px) {
+            nav {
+                position: relative;
+                padding: 14px 4%;
+            }
+
+            .nav-links { gap: 3px; }
+            .nav-links a { padding: 9px; font-size: 12px; }
+
+            .container { width: 94%; padding-top: 20px; }
+
+            .hero {
+                flex-direction: column;
+                align-items: flex-start;
+                border-radius: 21px;
+            }
+
+            .hero-link { align-self: flex-start; }
+
+            .quick-grid { grid-template-columns: 1fr; gap: 11px; }
+
+            .quick-card { padding: 15px; }
+        }
+
+        @media (max-width: 520px) {
+            .brand { font-size: 16px; }
+            .brand-icon { width: 34px; height: 34px; }
+
+            .nav-links { width: 100%; }
+            .nav-links a { flex: 1; text-align: center; }
+
+            .form-grid { grid-template-columns: 1fr; gap: 15px; }
+            .card { padding: 18px; border-radius: 17px; }
+            .card-heading { gap: 10px; }
+            .heading-icon { width: 38px; height: 38px; font-size: 19px; }
+            h2 { font-size: 19px; }
+            .chart-wrap { height: 290px; }
+            .result, .tracker-result { padding: 17px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after { transition: none !important; }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav>
+    <a href="/" class="brand">
+        <span class="brand-icon">🌿</span>
+        <span>Smart Electricity</span>
+    </a>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/dashboard" class="active">Dashboard</a>
+        <a href="/insights">Insights</a>
+        <a href="/thank-you">Thank You</a>
+    </div>
+</nav>
+
+<main class="container">
+
+    <header class="hero">
+        <div class="hero-content">
+            <div class="eyebrow">🌱 SMART ENERGY MANAGEMENT</div>
+            <h1>Your Energy.<br> Your Insights. Your Impact.</h1>
+            <p>
+                Welcome to your smart electricity dashboard. Predict
+                energy usage with machine learning, track meter readings,
+                and discover simple ways to build energy-saving habits.
+            </p>
+        </div>
+
+        <a href="#prediction" class="hero-link">Start Predicting →</a>
+    </header>
+
+    <section class="quick-grid">
+        <a href="#prediction" class="quick-card">
+            <div class="quick-icon">🤖</div>
+            <div>
+                <strong>ML Prediction</strong>
+                <span>Estimate electricity usage</span>
+            </div>
+        </a>
+
+        <a href="#meter-tracker" class="quick-card">
+            <div class="quick-icon">🏠</div>
+            <div>
+                <strong>Meter Tracker</strong>
+                <span>Record and compare readings</span>
+            </div>
+        </a>
+
+        <a href="/insights" class="quick-card">
+            <div class="quick-icon">📊</div>
+            <div>
+                <strong>Energy Insights</strong>
+                <span>Explore your saved data</span>
+            </div>
+        </a>
+    </section>
+
+    <!-- PART 1: MACHINE LEARNING PREDICTION -->
+    <section class="card" id="prediction">
+        <div class="card-heading">
+            <div class="heading-icon">🤖</div>
+            <div>
+                <h2>Energy Consumption Prediction</h2>
+                <div class="description">Machine learning powered usage estimation</div>
+            </div>
+        </div>
+
+        <p class="description">
+            Enter the requested values to estimate energy usage with the
+            trained Random Forest model. The model uses saved default values
+            for the remaining features.
+        </p>
+
+        <form method="POST" action="/dashboard">
+            <input type="hidden" name="action" value="predict">
+
+            <div class="form-grid">
+                <div>
+                    <label for="hour">Hour (0–23)</label>
+                    <input type="number" id="hour" name="hour"
+                           min="0" max="23" value="12" required>
+                </div>
+
+                <div>
+                    <label for="lights">Lights Usage</label>
+                    <input type="number" id="lights" name="lights"
+                           min="0" step="any" value="10" required>
+                </div>
+
+                <div>
+                    <label for="temperature">Temperature (°C)</label>
+                    <input type="number" id="temperature" name="temperature"
+                           step="any" value="21" required>
+                </div>
+
+                <div>
+                    <label for="humidity">Humidity (%)</label>
+                    <input type="number" id="humidity" name="humidity"
+                           min="0" max="100" step="any" value="40" required>
+                </div>
+            </div>
+
+            <button class="btn" type="submit">⚡ Predict Energy Usage</button>
+        </form>
+
+        {% if prediction is not none %}
+        <div class="result">
+            <h3>📊 Prediction Result</h3>
+
+            <span class="metric-label">Estimated model output</span>
+            <div class="prediction-value">
+                <span class="metric">{{ prediction }}</span>
+            </div>
+
+            <div class="result-meta">
+                <span>Usage Level: {{ usage_level }}</span>
+                <span>Time Period: {{ time_period }}</span>
+            </div>
+
+            <p class="description">
+                This is a machine-learning estimate, not a live meter
+                measurement. The displayed value is in the model's target
+                scale; it should not be interpreted as kWh without validating
+                the model's units.
+            </p>
+        </div>
+
+        <div class="recommendation-card
+            {% if usage_level == 'Low' %}low-card
+            {% elif usage_level == 'Medium' %}medium-card
+            {% else %}high-card{% endif %}">
+
+            <h3>{{ recommendation_title }}</h3>
+            <p>{{ recommendation }}</p>
+        </div>
+
+        {% if night_recommendation %}
+        <div class="recommendation-card night-card">
+            <h3>{{ night_recommendation[0] }}</h3>
+            <p>{{ night_recommendation[1] }}</p>
+        </div>
+        {% endif %}
+
+        {% elif recommendation %}
+        <div class="result error">
+            <strong>{{ recommendation }}</strong>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- PART 2: ACTUAL METER TRACKER -->
+    <section class="card" id="meter-tracker">
+        <div class="card-heading">
+            <div class="heading-icon">🏠</div>
+            <div>
+                <h2>Electricity Meter Tracker</h2>
+                <div class="description">Record actual cumulative meter readings</div>
+            </div>
+        </div>
+
+        <p class="description">
+            Enter the reading shown on your electricity meter. Use the same
+            meter ID for the same meter. Consumption is calculated by
+            comparing the new reading with its previous saved reading.
+        </p>
+
+        <form method="POST" action="/dashboard">
+            <input type="hidden" name="action" value="save_reading">
+
+            <div class="form-grid">
+                <div>
+                    <label for="meter_id">Meter ID / House ID</label>
+                    <input type="text" id="meter_id" name="meter_id"
+                           placeholder="Example: HOUSE101"
+                           maxlength="50" required>
+                </div>
+
+                <div>
+                    <label for="reading_date">Reading Date</label>
+                    <input type="date" id="reading_date" name="reading_date"
+                           required>
+                </div>
+
+                <div>
+                    <label for="reading_time">Reading Time</label>
+                    <input type="time" id="reading_time" name="reading_time"
+                           value="08:00" required>
+                </div>
+
+                <div>
+                    <label for="meter_reading">Meter Reading (kWh)</label>
+                    <input type="number" id="meter_reading"
+                           name="meter_reading" min="0" step="any"
+                           placeholder="Example: 1264.5" required>
+                </div>
+            </div>
+
+            <button class="btn" type="submit">💾 Save Meter Reading</button>
+        </form>
+
+        {% if tracking_result %}
+        <div class="tracker-result">
+            <h3>📈 Meter Tracking Result</h3>
+
+            <p><strong>Meter ID:</strong> {{ tracking_result.meter_id }}</p>
+            <p><strong>Date:</strong> {{ tracking_result.date }}</p>
+            <p><strong>Time:</strong> {{ tracking_result.time }}</p>
+            <p><strong>Current Reading:</strong> {{ tracking_result.reading }} meter units</p>
+
+            {% if tracking_result.previous_reading is not none %}
+                <p><strong>Previous Reading:</strong> {{ tracking_result.previous_reading }} meter units</p>
+
+                <p>
+                    <strong>Consumption Difference:</strong>
+                    <span class="metric">{{ tracking_result.consumption }}</span>
+                    meter units
+                </p>
+
+                {% if tracking_result.consumption > 0 %}
+                    <p>Usage since the previous reading: {{ tracking_result.consumption }} meter units.</p>
+                {% else %}
+                    <p>No increase in the cumulative meter reading.</p>
+                {% endif %}
+            {% endif %}
+
+            <p>{{ tracking_result.message }}</p>
+        </div>
+        {% endif %}
+
+        {% if tracker_error %}
+        <div class="result error">
+            <strong>{{ tracker_error }}</strong>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/dashboard">
+            <input type="hidden" name="action" value="sample_demo">
+            <button class="btn demo-button" type="submit">
+                🧪 Try Sample Demo Data
+            </button>
+        </form>
+
+        <p class="footnote">
+            Demo records are marked as sample data and are separate from
+            your actual meter readings. Consumption differences use the
+            meter's own measurement units.
+        </p>
+    </section>
+
+    <!-- PART 3: CONSUMPTION GRAPH -->
+    <section class="card" id="consumption-graph">
+        <div class="card-heading">
+            <div class="heading-icon">📊</div>
+            <div>
+                <h2>Consumption Graph</h2>
+                <div class="description">Differences between consecutive meter readings</div>
+            </div>
+        </div>
+
+        <p class="description">
+            The graph uses saved meter readings. It does not display
+            machine-learning predictions.
+        </p>
+
+        {% if graph_values %}
+            <div class="chart-wrap">
+                <canvas id="consumptionChart"></canvas>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <strong>📈 Your graph will appear here</strong>
+                Save two readings with the same meter ID at different times
+                to calculate and display consumption.
+            </div>
+        {% endif %}
+
+        <div style="margin-top:18px">
+            <a href="/insights" class="btn"
+               style="text-decoration:none; margin-top:0">
+                Explore Energy Insights →
+            </a>
+        </div>
+    </section>
+
+    <!-- PART 4: RECENT SAVED READINGS -->
+    <section class="card" id="recent-readings">
+        <div class="card-heading">
+            <div class="heading-icon">📋</div>
+            <div>
+                <h2>Recent Meter Readings</h2>
+                <div class="description">Latest saved meter records</div>
+            </div>
+        </div>
+
+        {% if tracker_history %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Meter ID</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Reading</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in tracker_history %}
+                    <tr>
+                        <td><strong>{{ item.meter_id }}</strong></td>
+                        <td>{{ item.reading_date }}</td>
+                        <td>{{ item.reading_time }}</td>
+                        <td>{{ item.meter_reading }}</td>
+                        <td>
+                            {% if item.source == "sample" %}
+                                <span class="tag">Sample Demo</span>
+                            {% else %}
+                                <span class="tag">Actual</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="empty-state">
+            <strong>No saved readings yet</strong>
+            Add an actual meter reading or try the sample demo to get started.
+        </div>
+        {% endif %}
+
+        <p class="footnote">
+            Actual entries and sample demo records are labelled separately
+            so they can be distinguished in the history.
+        </p>
+    </section>
+
+    <footer class="footer">
+        <strong>🌿 Smart Electricity Consumption Prediction &amp; Energy Optimization</strong>
+        <br>
+        Built with Python, Flask, Machine Learning, SQLite and Chart.js.
+        <br>
+        <a href="/">Home</a> ·
+        <a href="/insights">Energy Insights</a> ·
+        <a href="/thank-you">Thank You</a>
+    </footer>
+
+</main>
+
+<script>
+    // Set the reading date to today's local date when the field is empty.
+    const dateInput = document.getElementById("reading_date");
+
+    if (dateInput && !dateInput.value) {
+        const now = new Date();
+        const localDate = new Date(
+            now.getTime() - now.getTimezoneOffset() * 60000
+        ).toISOString().slice(0, 10);
+
+        dateInput.value = localDate;
+    }
+
+    // Render the graph using actual saved meter-reading differences.
+    {% if graph_values %}
+    const graphLabels = {{ graph_labels | tojson }};
+    const graphValues = {{ graph_values | tojson }};
+
+    const chartCanvas = document.getElementById("consumptionChart");
+
+    if (chartCanvas) {
+        new Chart(chartCanvas, {
+            type: "bar",
+            data: {
+                labels: graphLabels,
+                datasets: [{
+                    label: "Consumption difference (meter units)",
+                    data: graphValues,
+                    backgroundColor: "rgba(34, 160, 90, 0.72)",
+                    borderColor: "#168451",
+                    borderWidth: 1,
+                    borderRadius: 7,
+                    maxBarThickness: 48
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: { usePointStyle: true }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return " Consumption: " + context.parsed.y
+                                    + " meter units";
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "Consumption difference"
+                        },
+                        grid: { color: "#edf2ee" }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 0,
+                            autoSkip: true
+                        },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+</script>
+
+</body>
+</html>

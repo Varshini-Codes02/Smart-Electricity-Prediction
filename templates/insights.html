@@ -1,0 +1,265 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Insights | Smart Electricity</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eefbf2, #eaf2ff);
+            color: #173b2b;
+            min-height: 100vh;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            padding: 20px 6%;
+            background: rgba(255,255,255,.9);
+            box-shadow: 0 4px 20px #173b2b10;
+        }
+
+        .brand { font-size: 21px; font-weight: bold; color: #167448; }
+
+        nav a {
+            text-decoration: none;
+            color: #315544;
+            margin-left: 18px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        nav a:hover { color: #16a05d; }
+
+        .container { max-width: 1100px; margin: auto; padding: 35px 20px; }
+
+        .hero {
+            background: linear-gradient(120deg, #116b45, #27a568);
+            color: white;
+            border-radius: 24px;
+            padding: 35px;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 35px #16744825;
+        }
+
+        .hero h1 { margin: 0 0 12px; font-size: clamp(27px, 4vw, 38px); }
+        .hero p { line-height: 1.7; max-width: 700px; margin-bottom: 0; }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 28px #183e2a0c;
+            overflow: hidden;
+        }
+
+        .card h2 { margin-top: 0; font-size: 21px; }
+        .muted { color: #6c8075; font-size: 14px; line-height: 1.6; }
+
+        .chart-wrap { height: 330px; position: relative; }
+
+        .table-wrap { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; min-width: 620px; }
+        th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #edf2ee; font-size: 14px; }
+        th { background: #eff9f2; color: #246744; }
+        tr:hover td { background: #f8fcf9; }
+
+        .tag {
+            display: inline-block;
+            background: #e4f7e9;
+            color: #167448;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .empty {
+            padding: 25px;
+            text-align: center;
+            background: #f6faf7;
+            border-radius: 12px;
+            color: #6c8075;
+        }
+
+        .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 18px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: bold;
+            background: #168451;
+            color: white;
+        }
+
+        .btn.secondary { background: white; color: #168451; border: 1px solid #168451; }
+
+        footer { text-align: center; padding: 24px; color: #718477; font-size: 13px; }
+
+        @media(max-width: 600px) {
+            nav { padding: 17px 5%; }
+            nav a { margin-left: 0; margin-right: 12px; }
+            .container { padding: 22px 14px; }
+            .hero { padding: 25px; }
+            .card { padding: 18px; }
+            .chart-wrap { height: 260px; }
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="brand">🌿 Smart Electricity</div>
+        <div>
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/insights">Insights</a>
+            <a href="/thank-you">Thank You</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h1>📊 Your Energy Insights</h1>
+            <p>
+                Understand your saved electricity meter readings through
+                visual graphs and recent history. Small insights can help
+                you make smarter energy decisions.
+            </p>
+        </section>
+
+        <section class="card">
+            <h2>⚡ Consumption Overview</h2>
+            <p class="muted">
+                Consumption is calculated from consecutive readings
+                for the same meter ID. Values are shown in meter units
+                (typically kWh, if your meter uses kWh).
+            </p>
+
+            {% if graph_labels %}
+                <div class="chart-wrap">
+                    <canvas id="insightsChart"></canvas>
+                </div>
+            {% else %}
+                <div class="empty">
+                    <h3>🌱 No consumption data yet</h3>
+                    <p>Save at least two readings for the same meter to see a graph.</p>
+                    <a class="btn" href="/dashboard">Go to Dashboard</a>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>🧾 Recent Meter Readings</h2>
+            <p class="muted">
+                These are saved meter readings, not machine-learning predictions.
+            </p>
+
+            {% if tracker_history %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Meter ID</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Meter Reading</th>
+                                <th>Record Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in tracker_history %}
+                            <tr>
+                                <td><strong>{{ item.meter_id }}</strong></td>
+                                <td>{{ item.reading_date }}</td>
+                                <td>{{ item.reading_time }}</td>
+                                <td>{{ item.meter_reading }}</td>
+                                <td>
+                                    {% if item.source == 'sample' %}
+                                        <span class="tag">Demo Sample</span>
+                                    {% else %}
+                                        <span class="tag">Actual Entry</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty">
+                    No readings have been saved yet. Add readings from the dashboard.
+                </div>
+            {% endif %}
+
+            <div class="actions">
+                <a class="btn" href="/dashboard">← Back to Dashboard</a>
+                <a class="btn secondary" href="/thank-you">Finish</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>🌍 Smarter predictions. Better energy habits. A greener tomorrow.</footer>
+
+    {% if graph_labels %}
+    <script>
+        const labels = {{ graph_labels | tojson }};
+        const values = {{ graph_values | tojson }};
+
+        new Chart(document.getElementById("insightsChart"), {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Calculated consumption",
+                    data: values,
+                    borderColor: "#168451",
+                    backgroundColor: "rgba(22,132,81,0.12)",
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { intersect: false, mode: "index" },
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "Consumption (meter units)"
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

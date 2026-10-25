@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You | Smart Electricity</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 22px;
+            font-family: Arial, sans-serif;
+            color: #173b2b;
+            background:
+                radial-gradient(circle at 15% 15%, #d4f9df 0, transparent 35%),
+                radial-gradient(circle at 85% 85%, #dbe8ff 0, transparent 35%),
+                linear-gradient(135deg, #f4fff6, #eef3ff);
+        }
+
+        .card {
+            width: 100%;
+            max-width: 680px;
+            text-align: center;
+            padding: 48px 30px;
+            background: rgba(255,255,255,.92);
+            border: 1px solid #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 25px 70px rgba(28, 86, 53, .12);
+        }
+
+        .icon {
+            width: 100px;
+            height: 100px;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 24px;
+            border-radius: 30px;
+            font-size: 48px;
+            background: linear-gradient(135deg, #d8f9e2, #b9efce);
+        }
+
+        .eyebrow {
+            color: #168451;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        h1 {
+            font-size: clamp(30px, 6vw, 44px);
+            margin: 15px 0;
+        }
+
+        p {
+            color: #667b6d;
+            line-height: 1.8;
+            max-width: 510px;
+            margin: 0 auto;
+        }
+
+        .quote {
+            margin: 25px auto;
+            padding: 18px;
+            border-radius: 15px;
+            background: #f0faf3;
+            color: #26704a;
+            font-weight: 600;
+            line-height: 1.7;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        a {
+            text-decoration: none;
+            display: inline-block;
+            padding: 14px 21px;
+            border-radius: 13px;
+            font-weight: bold;
+        }
+
+        .primary {
+            background: linear-gradient(135deg, #168451, #26a86a);
+            color: white;
+            box-shadow: 0 8px 20px #16845130;
+        }
+
+        .secondary {
+            background: white;
+            color: #168451;
+            border: 1px solid #cfe8d7;
+        }
+
+        .footer {
+            margin-top: 32px;
+            font-size: 12px;
+            color: #8a9a8f;
+        }
+
+        a:hover { transform: translateY(-2px); }
+
+        @media(max-width: 480px) {
+            .card { padding: 35px 20px; }
+            .actions { flex-direction: column; }
+            .actions a { width: 100%; }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="card">
+        <div class="icon">🌿</div>
+        <div class="eyebrow">Smart Electricity Project</div>
+
+        <h1>Thank You! 💚</h1>
+
+        <p>
+            Thank you for exploring our Smart Electricity Consumption
+            Prediction and Energy Optimization system.
+        </p>
+
+        <div class="quote">
+            “Every unit of energy saved is a step towards a greener future.” 🌍
+        </div>
+
+        <p>
+            Our project combines machine learning predictions,
+            electricity meter tracking and energy-saving recommendations
+            to encourage smarter electricity usage.
+        </p>
+
+        <div class="actions">
+            <a class="primary" href="/">⌂ Back to Home</a>
+            <a class="secondary" href="/dashboard">⚡ Open Dashboard</a>
+            <a class="secondary" href="/insights">📊 View Insights</a>
+        </div>
+
+        <div class="footer">
+            Built with Python, Flask, Machine Learning and SQLite
+        </div>
+    </main>
+</body>
+</html>

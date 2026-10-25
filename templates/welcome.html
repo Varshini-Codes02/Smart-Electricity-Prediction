@@ -1,0 +1,406 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome | Smart Electricity</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            min-height: 100vh;
+            color: #163c2b;
+            background: #f3faf4;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 8%;
+        }
+
+        .logo {
+            font-size: 23px;
+            font-weight: 800;
+            color: #176b45;
+        }
+
+        .logo span {
+            color: #e6a817;
+        }
+
+        .nav-tag {
+            background: #e1f4e6;
+            color: #176b45;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .hero {
+            min-height: 76vh;
+            padding: 55px 8% 75px;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            align-items: center;
+            gap: 50px;
+        }
+
+        .tagline {
+            display: inline-block;
+            background: #e0f3e4;
+            color: #237447;
+            padding: 10px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: clamp(40px, 5vw, 67px);
+            line-height: 1.12;
+            letter-spacing: -2px;
+            margin-bottom: 24px;
+        }
+
+        h1 span {
+            color: #23965c;
+        }
+
+        .description {
+            font-size: 17px;
+            line-height: 1.8;
+            color: #627568;
+            max-width: 540px;
+            margin-bottom: 32px;
+        }
+
+        .buttons {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .start-btn {
+            display: inline-block;
+            padding: 16px 27px;
+            background: linear-gradient(135deg, #238a51, #126b40);
+            color: white;
+            text-decoration: none;
+            border-radius: 13px;
+            font-weight: 700;
+            box-shadow: 0 10px 25px #238a5130;
+            transition: 0.25s;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 30px #238a5140;
+        }
+
+        .learn-text {
+            color: #54705d;
+            font-size: 14px;
+        }
+
+        .visual {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        .glow {
+            position: absolute;
+            width: 330px;
+            height: 330px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #d7f6d8, #b1e9c2);
+            filter: blur(1px);
+        }
+
+        .energy-card {
+            position: relative;
+            z-index: 1;
+            width: min(100%, 360px);
+            padding: 30px;
+            background: #ffffffd9;
+            border: 1px solid #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 25px 65px #1b57301a;
+            backdrop-filter: blur(10px);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .energy-icon {
+            width: 76px;
+            height: 76px;
+            display: grid;
+            place-items: center;
+            background: #fff3c8;
+            border-radius: 23px;
+            font-size: 43px;
+            margin-bottom: 22px;
+        }
+
+        .energy-card h2 {
+            font-size: 23px;
+            margin-bottom: 9px;
+        }
+
+        .energy-card p {
+            color: #718076;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .mini-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .stat {
+            padding: 16px;
+            background: #f0f8f1;
+            border-radius: 15px;
+        }
+
+        .stat strong {
+            display: block;
+            color: #21834c;
+            font-size: 17px;
+            margin-bottom: 5px;
+        }
+
+        .stat small {
+            color: #718076;
+            font-size: 12px;
+        }
+
+        .sparkle {
+            position: absolute;
+            font-size: 34px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .sparkle.one {
+            top: 45px;
+            right: 15px;
+        }
+
+        .sparkle.two {
+            bottom: 45px;
+            left: 5px;
+            animation-delay: 0.8s;
+        }
+
+        .features {
+            padding: 35px 8% 65px;
+            background: white;
+            text-align: center;
+        }
+
+        .features h2 {
+            font-size: 29px;
+            margin-bottom: 12px;
+        }
+
+        .features > p {
+            color: #748276;
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .feature {
+            padding: 25px 20px;
+            border: 1px solid #e8f0e9;
+            border-radius: 18px;
+            text-align: left;
+            transition: 0.25s;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px #214b2810;
+        }
+
+        .feature-icon {
+            font-size: 30px;
+            margin-bottom: 15px;
+        }
+
+        .feature h3 {
+            font-size: 17px;
+            margin-bottom: 9px;
+        }
+
+        .feature p {
+            color: #748276;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        footer {
+            background: #f3faf4;
+            color: #718076;
+            padding: 22px 8%;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 1; }
+        }
+
+        @media (max-width: 800px) {
+            .hero {
+                grid-template-columns: 1fr;
+                padding-top: 35px;
+                gap: 20px;
+            }
+
+            .visual {
+                min-height: 370px;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                letter-spacing: -1px;
+            }
+
+            .navbar {
+                padding: 20px 6%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="logo">⚡ Smart<span>Electricity</span></div>
+        <div class="nav-tag">🌿 Smart Energy • Greener Future</div>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="tagline">🌍 INTELLIGENT ENERGY MANAGEMENT</div>
+
+                <h1>
+                    Hi, Welcome to<br>
+                    Smart <span>Electricity!</span>
+                </h1>
+
+                <p class="description">
+                    Make every unit count! Predict electricity consumption
+                    using Machine Learning, understand your energy usage,
+                    and discover smarter ways to save electricity.
+                </p>
+
+                <div class="buttons">
+                    <a href="/dashboard" class="start-btn">
+                        Get Started &nbsp; →
+                    </a>
+                    <span class="learn-text">⚡ Predict • Analyse • Save</span>
+                </div>
+            </div>
+
+            <div class="visual">
+                <div class="glow"></div>
+                <span class="sparkle one">✨</span>
+                <span class="sparkle two">🌱</span>
+
+                <div class="energy-card">
+                    <div class="energy-icon">💡</div>
+                    <h2>Power Your Smart Future</h2>
+                    <p>
+                        Turn electricity data into useful insights
+                        and build energy-saving habits.
+                    </p>
+
+                    <div class="mini-stats">
+                        <div class="stat">
+                            <strong>🤖 ML</strong>
+                            <small>Usage Prediction</small>
+                        </div>
+                        <div class="stat">
+                            <strong>🌿 Eco</strong>
+                            <small>Energy Saving</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <h2>Everything Starts with Smart Energy</h2>
+            <p>Understand your usage and make better energy decisions.</p>
+
+            <div class="feature-grid">
+                <div class="feature">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI-Powered Prediction</h3>
+                    <p>
+                        Use a trained Machine Learning model to estimate
+                        electricity consumption from your inputs.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Energy Insights</h3>
+                    <p>
+                        Explore usage levels, consumption history,
+                        and visual graphs to understand energy patterns.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">🌎</div>
+                    <h3>Save Energy, Save More</h3>
+                    <p>
+                        Get practical recommendations to reduce
+                        unnecessary electricity usage.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        ⚡ Smart Electricity Consumption Prediction & Energy Optimization
+        <br><br>
+        Built with Machine Learning and Flask 🌿
+    </footer>
+</body>
+</html>
