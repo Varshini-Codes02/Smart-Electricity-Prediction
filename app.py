@@ -32,6 +32,18 @@ def init_database():
             )
         """)
 
+        # Add source column if an older database does not have it.
+        columns = [
+            row["name"]
+            for row in conn.execute("PRAGMA table_info(readings)").fetchall()
+        ]
+
+        if "source" not in columns:
+            conn.execute("""
+                ALTER TABLE readings
+                ADD COLUMN source TEXT NOT NULL DEFAULT 'actual'
+            """)
+
 
 init_database()
 
@@ -79,7 +91,7 @@ def calculate_consumption(meter_id, reading_date, reading_time):
             "reading": current["meter_reading"],
             "previous_reading": None,
             "consumption": None,
-            "message": "First reading saved. Add another reading to calculate consumption."
+            "message": "First reading saved successfully. Add another reading to calculate consumption."
         }
 
     consumption = (
@@ -94,7 +106,7 @@ def calculate_consumption(meter_id, reading_date, reading_time):
         "reading": current["meter_reading"],
         "previous_reading": previous["meter_reading"],
         "consumption": round(consumption, 2),
-        "message": "Consumption calculated successfully."
+        "message": "Meter reading saved and consumption calculated successfully."
     }
 
 
@@ -112,7 +124,6 @@ def get_daily_consumptions(meter_id):
 
     daily_readings = {}
 
-    # Use the last reading recorded on each date.
     for reading in readings:
         daily_readings[reading["reading_date"]] = float(
             reading["meter_reading"]
@@ -126,7 +137,6 @@ def get_daily_consumptions(meter_id):
         previous_date = date.fromisoformat(dates[i - 1])
         current_date = date.fromisoformat(dates[i])
 
-        # Calculate daily consumption only for consecutive dates.
         if (current_date - previous_date).days != 1:
             continue
 
@@ -155,8 +165,9 @@ def predict_next_day(meter_id):
             "level": None,
             "recommendation": None,
             "message": (
-                "Save at least 8 consecutive daily consumption values. "
-                "Usually 9 daily meter readings are required for prediction."
+                f"Currently {len(history)} daily consumption records are available. "
+                "Save at least 8 daily consumption values (usually 9 daily readings) "
+                "to generate the prediction."
             )
         }
 
@@ -229,8 +240,7 @@ def predict_next_day(meter_id):
         "level": level,
         "recommendation": recommendation,
         "message": (
-            f"Prediction generated using {len(values)} daily "
-            "consumption records."
+            f"Prediction generated using {len(values)} daily consumption records."
         )
     }
 
@@ -390,19 +400,28 @@ def create_sample_data():
 
 # ---------------- GRAPH DATA ----------------
 
-def get_consumption_graph_data():
+def get_consumption_graph_data(meter_id=None):
 
     graph_labels = []
     graph_values = []
 
     with get_connection() as conn:
 
-        recent_readings = conn.execute("""
-            SELECT meter_id, reading_date, reading_time, meter_reading
-            FROM readings
-            ORDER BY reading_date DESC, reading_time DESC, id DESC
-            LIMIT 10
-        """).fetchall()
+        if meter_id:
+            recent_readings = conn.execute("""
+                SELECT meter_id, reading_date, reading_time, meter_reading
+                FROM readings
+                WHERE meter_id = ?
+                ORDER BY reading_date DESC, reading_time DESC, id DESC
+                LIMIT 10
+            """, (meter_id,)).fetchall()
+        else:
+            recent_readings = conn.execute("""
+                SELECT meter_id, reading_date, reading_time, meter_reading
+                FROM readings
+                ORDER BY reading_date DESC, reading_time DESC, id DESC
+                LIMIT 10
+            """).fetchall()
 
         for current in recent_readings:
 
@@ -435,7 +454,6 @@ def get_consumption_graph_data():
                 continue
 
             graph_labels.append(
-                f"{current['meter_id']} | "
                 f"{current['reading_date']} {current['reading_time']}"
             )
 
@@ -451,13 +469,6 @@ def get_consumption_graph_data():
 
 @app.route("/dashboard", methods=["GET", "POST"])
 def home():
-
-    prediction = None
-    usage_level = None
-    time_period = None
-    recommendation = None
-    recommendation_title = None
-    night_recommendation = None
 
     next_day_prediction = None
     prediction_level = None
@@ -481,7 +492,6 @@ def home():
 
         action = request.form.get("action", "")
 
-        # SAVE ACTUAL METER READING
         if action == "save_reading":
 
             try:
@@ -489,21 +499,40 @@ def home():
                     "meter_id", ""
                 ).strip().upper()
 
-                reading_date = request.form.get("reading_date", "")
-                reading_time = request.form.get("reading_time", "")
+                reading_date = request.form.get(
+                    "reading_date", ""
+                ).strip()
 
-                meter_reading = float(
-                    request.form.get("meter_reading", "")
-                )
+                reading_time = request.form.get(
+                    "reading_time", ""
+                ).strip()
 
-                if not meter_id or len(meter_id) > 50:
-                    raise ValueError("Enter a valid meter ID.")
+                reading_value = request.form.get(
+                    "meter_reading", ""
+                ).strip()
+
+                if not meter_id:
+                    raise ValueError("Please enter your Meter ID.")
+
+                if len(meter_id) > 50:
+                    raise ValueError("Meter ID must be 50 characters or less.")
+
+                if not reading_date:
+                    raise ValueError("Please select the reading date.")
+
+                if not reading_time:
+                    raise ValueError("Please select the reading time.")
+
+                if not reading_value:
+                    raise ValueError("Please enter the meter reading.")
 
                 parsed_date = date.fromisoformat(reading_date)
                 datetime.strptime(reading_time, "%H:%M")
 
                 if parsed_date > date.today():
                     raise ValueError("Reading date cannot be in the future.")
+
+                meter_reading = float(reading_value)
 
                 if not math.isfinite(meter_reading) or meter_reading < 0:
                     raise ValueError("Enter a valid non-negative meter reading.")
@@ -529,8 +558,8 @@ def home():
                         and meter_reading < float(previous["meter_reading"])
                     ):
                         raise ValueError(
-                            "This reading is lower than the previous reading. "
-                            "Check the meter ID and reading."
+                            "Your new meter reading is lower than the previous "
+                            "reading. Please check the Meter ID and reading value."
                         )
 
                     conn.execute("""
@@ -555,15 +584,19 @@ def home():
 
             except sqlite3.IntegrityError:
                 tracker_error = (
-                    "A reading for this meter ID, date and time already exists."
+                    "This Meter ID already has a reading saved for the same "
+                    "date and time. Change the time or date and try again."
                 )
 
-            except (ValueError, TypeError):
+            except ValueError as error:
+                tracker_error = str(error)
+
+            except Exception as error:
+                app.logger.exception("Meter reading save failed")
                 tracker_error = (
-                    "Please check the meter ID, date, time and reading."
+                    f"Unable to save the reading. Error: {str(error)}"
                 )
 
-        # SAMPLE DEMO
         elif action == "sample_demo":
 
             try:
@@ -573,12 +606,13 @@ def home():
                 if tracking_result is None:
                     tracker_error = "Sample reading could not be found."
 
-            except sqlite3.Error:
+            except Exception as error:
+                app.logger.exception("Sample data creation failed")
                 tracker_error = (
-                    "Database error while creating sample data."
+                    f"Unable to create sample data. Error: {str(error)}"
                 )
 
-    # RECENT READINGS AND SELECTED METER
+    # RECENT READINGS
     with get_connection() as conn:
 
         tracker_history = conn.execute("""
@@ -601,7 +635,7 @@ def home():
             if latest:
                 selected_meter_id = latest["meter_id"]
 
-    # NEXT-DAY PREDICTION
+    # PREDICTION
     if selected_meter_id:
 
         result = predict_next_day(selected_meter_id)
@@ -611,7 +645,7 @@ def home():
         prediction_recommendation = result["recommendation"]
         prediction_message = result["message"]
 
-    # YESTERDAY VS TODAY COMPARISON
+    # DAILY COMPARISON
     if selected_meter_id:
 
         comparison = get_daily_comparison(selected_meter_id)
@@ -623,18 +657,13 @@ def home():
         comparison_message = comparison["message"]
         comparison_recommendation = comparison["recommendation"]
 
-    # GRAPH
-    graph_labels, graph_values = get_consumption_graph_data()
+    # GRAPH FOR SELECTED METER
+    graph_labels, graph_values = get_consumption_graph_data(
+        selected_meter_id
+    )
 
     return render_template(
         "index.html",
-
-        prediction=prediction,
-        usage_level=usage_level,
-        time_period=time_period,
-        recommendation=recommendation,
-        recommendation_title=recommendation_title,
-        night_recommendation=night_recommendation,
 
         next_day_prediction=next_day_prediction,
         prediction_level=prediction_level,
